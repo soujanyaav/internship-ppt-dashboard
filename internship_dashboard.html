@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UnifyData Internship Results Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            color: #667eea;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-value {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .performance-table {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .performance-table h3 {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 1rem;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .connector-tag {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .source-tag {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        .destination-tag {
+            background: linear-gradient(135deg, #dc3545, #fd7e14);
+        }
+
+        .achievements-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .achievement-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+            transition: transform 0.2s ease;
+        }
+
+        .achievement-card:hover {
+            transform: translateX(5px);
+        }
+
+        .achievement-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .achievement-desc {
+            color: #495057;
+            line-height: 1.6;
+        }
+
+        .footer {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer p {
+            color: #6c757d;
+            font-size: 1rem;
+        }
+
+        .metric-improvement {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .metric-before {
+            color: #dc3545;
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .stat-value {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Header -->
+        <div class="header">
+            <h1>UnifyData Internship Results Dashboard</h1>
+            <p class="subtitle">Data Integration Platform Development: Implementation & Optimization Results</p>
+            <p style="margin-top: 15px; color: #6c757d;"><strong>Soujanya Nayak</strong> | Roll: 21BT30028 | UnifyApps | May-July 2025</p>
+        </div>
+
+        <!-- Key Statistics -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">5</div>
+                <div class="stat-label">Enterprise Connectors Developed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">99.8%</div>
+                <div class="stat-label">Average System Availability</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">195K</div>
+                <div class="stat-label">Total Throughput (records/min)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">35%</div>
+                <div class="stat-label">MySQL Error Reduction</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">60%</div>
+                <div class="stat-label">MongoDB Failure Reduction</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">176ms</div>
+                <div class="stat-label">Average Latency</div>
+            </div>
+        </div>
+
+        <!-- Performance Table -->
+        <div class="performance-table">
+            <h3>Connector Performance Summary</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Connector</th>
+                        <th>Type</th>
+                        <th>Throughput (records/min)</th>
+                        <th>Latency (ms)</th>
+                        <th>Availability (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Confluence</strong></td>
+                        <td><span class="connector-tag source-tag">SOURCE</span></td>
+                        <td>15,000</td>
+                        <td>250</td>
+                        <td>99.8</td>
+                    </tr>
+                    <tr>
+                        <td><strong>AppsFlyer</strong></td>
+                        <td><span class="connector-tag source-tag">SOURCE</span></td>
+                        <td>50,000</td>
+                        <td>150</td>
+                        <td>99.9</td>
+                    </tr>
+                    <tr>
+                        <td><strong>OpenSearch</strong></td>
+                        <td><span class="connector-tag source-tag">SOURCE</span></td>
+                        <td>75,000</td>
+                        <td>100</td>
+                        <td>99.7</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Smartsheet</strong></td>
+                        <td><span class="connector-tag source-tag">SOURCE</span></td>
+                        <td>25,000</td>
+                        <td>200</td>
+                        <td>99.8</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Monday.com</strong></td>
+                        <td><span class="connector-tag destination-tag">DESTINATION</span></td>
+                        <td>30,000</td>
+                        <td>180</td>
+                        <td>99.6</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="chart-title">Connector Throughput Comparison</div>
+                <canvas id="throughputChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">System Availability Metrics</div>
+                <canvas id="availabilityChart"></canvas>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="chart-title">Database Optimization Results</div>
+                <canvas id="optimizationChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Latency Performance</div>
+                <canvas id="latencyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Technical Achievements -->
+        <div class="achievements-section">
+            <h3 style="text-align: center; color: #2c3e50; margin-bottom: 10px;">Key Technical Achievements</h3>
+            <div class="achievements-grid">
+                <div class="achievement-card">
+                    <div class="achievement-title">Innovation in Testing</div>
+                    <div class="achievement-desc">Created custom Android application using Kotlin to test AppsFlyer connector with realistic mobile attribution data patterns</div>
+                </div>
+                <div class="achievement-card">
+                    <div class="achievement-title">Cross-Platform Architecture</div>
+                    <div class="achievement-desc">Designed unified connector framework serving both UnifyData and UnifyAutomation, reducing development overhead</div>
+                </div>
+                <div class="achievement-card">
+                    <div class="achievement-title">Schema Disambiguation</div>
+                    <div class="achievement-desc">Developed sophisticated MySQL query logic automatically handling schema qualifiers in enterprise environments</div>
+                </div>
+                <div class="achievement-card">
+                    <div class="achievement-title">Authentication Enhancement</div>
+                    <div class="achievement-desc">Redesigned MongoDB authentication flows supporting LDAP, Kerberos, and certificate-based authentication</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Database Improvements -->
+        <div class="performance-table">
+            <h3>Database Connector Optimization Results</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>MySQL Before</th>
+                        <th>MySQL After</th>
+                        <th>MongoDB Before</th>
+                        <th>MongoDB After</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Error Rate (%)</strong></td>
+                        <td><span class="metric-before">3.2</span></td>
+                        <td><span class="metric-improvement">0.12</span></td>
+                        <td><span class="metric-before">4.2</span></td>
+                        <td><span class="metric-improvement">0.8</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Connection Success (%)</strong></td>
+                        <td><span class="metric-before">89</span></td>
+                        <td><span class="metric-improvement">99.6</span></td>
+                        <td><span class="metric-before">85</span></td>
+                        <td><span class="metric-improvement">99.2</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Data Accuracy (%)</strong></td>
+                        <td><span class="metric-before">91</span></td>
+                        <td><span class="metric-improvement">99.9</span></td>
+                        <td><span class="metric-before">91</span></td>
+                        <td><span class="metric-improvement">99.5</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Average Latency (ms)</strong></td>
+                        <td><span class="metric-before">480</span></td>
+                        <td><span class="metric-improvement">275</span></td>
+                        <td><span class="metric-before">520</span></td>
+                        <td><span class="metric-improvement">320</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Dashboard showcasing comprehensive results from UnifyData platform development internship</p>
+            <p style="margin-top: 10px; font-weight: bold;">Recognition: Pre-Placement Offer (PPO) received for outstanding performance</p>
+        </div>
+    </div>
+
+    <script>
+        // Throughput Chart
+        const throughputCtx = document.getElementById('throughputChart').getContext('2d');
+        new Chart(throughputCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Confluence', 'AppsFlyer', 'OpenSearch', 'Smartsheet', 'Monday.com'],
+                datasets: [{
+                    label: 'Throughput (records/min)',
+                    data: [15000, 50000, 75000, 25000, 30000],
+                    backgroundColor: [
+                        '#667eea',
+                        '#764ba2', 
+                        '#667eea',
+                        '#764ba2',
+                        '#e74c3c'
+                    ],
+                    borderColor: [
+                        '#5a67d8',
+                        '#6c5ce7',
+                        '#5a67d8', 
+                        '#6c5ce7',
+                        '#c0392b'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Availability Chart
+        const availabilityCtx = document.getElementById('availabilityChart').getContext('2d');
+        new Chart(availabilityCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Confluence (99.8%)', 'AppsFlyer (99.9%)', 'OpenSearch (99.7%)', 'Smartsheet (99.8%)', 'Monday.com (99.6%)'],
+                datasets: [{
+                    data: [99.8, 99.9, 99.7, 99.8, 99.6],
+                    backgroundColor: ['#667eea', '#764ba2', '#8b5cf6', '#06d6a0', '#e74c3c'],
+                    borderWidth: 3,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Optimization Results Chart
+        const optimizationCtx = document.getElementById('optimizationChart').getContext('2d');
+        new Chart(optimizationCtx, {
+            type: 'bar',
+            data: {
+                labels: ['MySQL Error Reduction', 'MongoDB Connection Improvement', 'Data Accuracy Boost'],
+                datasets: [{
+                    label: 'Improvement (%)',
+                    data: [35, 60, 8.9],
+                    backgroundColor: ['#28a745', '#17a2b8', '#6f42c1'],
+                    borderColor: ['#1e7e34', '#117a8b', '#5a2d91'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 70
+                    }
+                }
+            }
+        });
+
+        // Latency Chart
+        const latencyCtx = document.getElementById('latencyChart').getContext('2d');
+        new Chart(latencyCtx, {
+            type: 'line',
+            data: {
+                labels: ['Confluence', 'AppsFlyer', 'OpenSearch', 'Smartsheet', 'Monday.com'],
+                datasets: [{
+                    label: 'Latency (ms)',
+                    data: [250, 150, 100, 200, 180],
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#667eea',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 3,
+                    pointRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
